@@ -13,8 +13,6 @@ services:
     image: hazelcast/hazelcast:5.3.0
     deploy:
       replicas: 3
-    ports:
-      - "5701-5703:5701"
 
   facade-service:
     build: ./facade
@@ -42,9 +40,10 @@ services:
       - "8081:8000"
 
   logging-2:
-    build: ./logging_service
     image: my-logging-service
     container_name: logging-node-2
+    depends_on:
+      - logging-1  
     environment:
       - HZ_ADDRESSES=hazelcast:5701
       - SERVICE_NAME=logging-2
@@ -52,9 +51,10 @@ services:
       - "8082:8000"
 
   logging-3:
-    build: ./logging_service
     image: my-logging-service
     container_name: logging-node-3
+    depends_on:
+      - logging-1
     environment:
       - HZ_ADDRESSES=hazelcast:5701
       - SERVICE_NAME=logging-3
