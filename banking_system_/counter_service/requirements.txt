@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+httpx
+hazelcast-python-client
+databases[postgresql]
+asyncpg
