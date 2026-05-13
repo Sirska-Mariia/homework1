@@ -1,30 +1,17 @@
 import os
 import asyncio
 import threading
-import httpx
 import hazelcast
 from fastapi import FastAPI
 from databases import Database
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@postgres-db:5432/bank_db")
+DATABASE_URL = os.getenv("DB_URL", "postgresql://postgres:postgres@bank-db:5432/bank")
+HZ_ADDRESSES = os.getenv("HZ_ADDRESSES", "hazelcast-service:5701")
+MQ_QUEUE_NAME = os.getenv("MQ_QUEUE_NAME", "transaction-queue")
+
 database = Database(DATABASE_URL)
-
 app = FastAPI()
-
 event_loop = None
-
-async def register_service():
-    config_url = "http://config-server:8000/register"
-    payload = {
-        "service_name": "counter-service",
-        "address": "http://counter-service:8000"
-    }
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(config_url, json=payload)
-            print("Counter Service successfully registered in Config Server")
-        except Exception as e:
-            print(f"Failed to register in Config Server: {e}")
 
 async def update_balance_in_db(user_id: str, amount: float):
     query = """
@@ -41,8 +28,11 @@ async def update_balance_in_db(user_id: str, amount: float):
 
 def consume_queue():
     try:
-        hz_client = hazelcast.HazelcastClient(cluster_members=["hazelcast:5701"])
-        queue = hz_client.get_queue("transaction-queue").blocking()
+        hz_client = hazelcast.HazelcastClient(
+            cluster_members=[HZ_ADDRESSES],
+            cluster_name="dev"
+        )
+        queue = hz_client.get_queue(MQ_QUEUE_NAME).blocking()
         print("MQ Consumer started. Waiting for messages...")
         
         while True:
@@ -70,8 +60,6 @@ async def startup():
     """)
     
     threading.Thread(target=consume_queue, daemon=True).start()
-    
-    asyncio.create_task(register_service())
 
 @app.on_event("shutdown")
 async def shutdown():

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hazelcast-service
+spec:
+  clusterIP: None 
+  selector:
+    app: hazelcast
+  ports:
+    - protocol: TCP
+      port: 5701
+      targetPort: 5701
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hazelcast
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: hazelcast
+  template:
+    metadata:
+      labels:
+        app: hazelcast
+    spec:
+      containers:
+      - name: hazelcast
+        image: hazelcast/hazelcast:5.3.0
+        ports:
+        - containerPort: 5701
+        envFrom:
+        - configMapRef:
+            name: banking-config

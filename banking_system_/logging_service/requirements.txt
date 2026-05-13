@@ -1,4 +1,3 @@
 fastapi
 uvicorn
-httpx
 hazelcast-python-client

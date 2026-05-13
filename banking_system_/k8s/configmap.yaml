@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: banking-config
+data:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "password"
+  POSTGRES_DB: "bank_db"
+  DB_URL: "postgresql://postgres:password@postgres-db:5432/bank_db"
+  
+  HZ_ADDRESSES: "hazelcast-service:5701"
+  HZ_CLUSTER_NAME: "dev"
+  
+  MQ_QUEUE_NAME: "transaction-queue"
+  
+  LOGGING_SERVICE_URL: "http://logging-service:8000"
+  COUNTER_SERVICE_URL: "http://counter-service:8000"
